@@ -5,7 +5,11 @@ namespace WebWorker.Assembly
 {
     public class WebWorkerAssemblyLoadContext : AssemblyLoadContext
     {
-        private static string? workPath;
+        private string? workPath;
+
+        public WebWorkerAssemblyLoadContext() : base(isCollectible: true)
+        {
+        }
 
         protected override System.Reflection.Assembly? Load(AssemblyName assemblyName)
         {
@@ -23,37 +27,6 @@ namespace WebWorker.Assembly
             return File.Exists(assemblyPath) ? LoadFromAssemblyPath(assemblyPath) : null;
         }
 
-        public void LoadAssemblyAndDependencies(string assemblyPath)
-        {
-            var mainAssembly = LoadFromAssemblyPath(assemblyPath);
-
-            ResolveDependencies(mainAssembly);
-        }
-
-        private static void ResolveDependencies(System.Reflection.Assembly mainAssembly)
-        {
-            var assembliesToLoad = new Queue<AssemblyName>(mainAssembly.GetReferencedAssemblies());
-            var loadedAssemblies = new HashSet<string>();
-
-            while (assembliesToLoad.Count > 0)
-            {
-                var assemblyName = assembliesToLoad.Dequeue();
-
-                if (!loadedAssemblies.Contains(assemblyName.FullName))
-                {
-                    var loadedAssembly = Default.LoadFromAssemblyName(assemblyName);
-                    if (loadedAssembly != null)
-                    {
-                        loadedAssemblies.Add(assemblyName.FullName);
-
-                        foreach (var referencedAssembly in loadedAssembly.GetReferencedAssemblies())
-                        {
-                            assembliesToLoad.Enqueue(referencedAssembly);
-                        }
-                    }
-                }
-            }
-        }
 
         /// <summary>
         ///     Create the Work directory if it does not exist.
