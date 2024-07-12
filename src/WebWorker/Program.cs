@@ -1,6 +1,9 @@
+using WebWorker.Assembly;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddSingleton<WebWorkerAssemblyLoadContext>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -22,4 +25,8 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+var wwAssemblyContext = app.Services.GetRequiredService<WebWorkerAssemblyLoadContext>();
+wwAssemblyContext.InitWorkDirectory();
+
 app.Run();
+
