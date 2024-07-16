@@ -5,11 +5,21 @@ namespace WebWorker.Worker
 {
     public class AssemblyWorker : BackgroundService
     {
-        ILogger<AssemblyWorker> _logger;
-        WebWorkerAssemblyLoadContext _webWorkerAssemblyLoadContext;
+        private Guid _workerId;
+        private ILogger<AssemblyWorker> _logger;
+        private WebWorkerAssemblyLoadContext _webWorkerAssemblyLoadContext;
+        private ManualResetEvent _messageEvent = new(false);
 
-        public AssemblyWorker(ILogger<AssemblyWorker> logger, WebWorkerAssemblyLoadContext webWorkerAssemblyLoadContext)
+        public Guid Id => _workerId;
+
+        public void SignalMessageEvent()
         {
+            _messageEvent.Set();
+        }
+
+        public AssemblyWorker(Guid workerId, ILogger<AssemblyWorker> logger, WebWorkerAssemblyLoadContext webWorkerAssemblyLoadContext)
+        {
+            _workerId = workerId;
             _logger = logger;
             _webWorkerAssemblyLoadContext = webWorkerAssemblyLoadContext;
         }
@@ -20,12 +30,9 @@ namespace WebWorker.Worker
             {
                 try
                 {
-                    // Block, listen to RabbitMQ messages
-                    await Task.Delay(3000, stoppingToken);
+                    _messageEvent.WaitOne();
 
-                    // Do RabbitMQ message processing by loading the corresponding assembly dynamically
-
-                    Console.WriteLine("AssemblyWorker is doing background work.");
+                    // TODO: Implement the worker logic here
 
                 }
                 catch (Exception e)
