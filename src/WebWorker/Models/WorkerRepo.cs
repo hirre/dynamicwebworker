@@ -26,5 +26,10 @@ namespace WebWorker.Models
         {
             _workerInfos.TryRemove(workerId, out _);
         }
+
+        public WorkerInfo[] GetWorkerInfos()
+        {
+            return _workerInfos.Values.ToArray();
+        }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebWorker.Assembly;
+using WebWorker.Logic;
 using WebWorker.Models;
-using WebWorker.Worker;
 
 namespace WebWorker.Controllers
 {
@@ -9,15 +8,13 @@ namespace WebWorker.Controllers
     [ApiController]
     public class WorkerController : ControllerBase
     {
-        private IServiceProvider _serviceProvider;
-        private WorkerRepo _workerRepo;
+        private readonly WorkLogic _workLogic;
+        private readonly ILogger<WorkerController> _logger;
 
-        public WorkerController(IServiceProvider serviceProvider,
-            IHostApplicationLifetime hostApplicationLifetime,
-            WorkerRepo workerRepo)
+        public WorkerController(WorkLogic workLogic, ILogger<WorkerController> logger)
         {
-            _serviceProvider = serviceProvider;
-            _workerRepo = workerRepo;
+            _workLogic = workLogic;
+            _logger = logger;
         }
 
         [HttpPost]
@@ -28,17 +25,36 @@ namespace WebWorker.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (_workerRepo.ContainsWorker(createWorkerRequestDto.WorkerId))
-                return BadRequest($"Worker {createWorkerRequestDto.WorkerId} already exists.");
+            try
+            {
+                _workLogic.CreateWorker(createWorkerRequestDto);
+            }
+            catch (DuplicateWaitObjectException ex)
+            {
+                _logger.LogError(ex, "Error creating worker");
 
-            var workerService = new AssemblyWorker(createWorkerRequestDto.WorkerId, _serviceProvider.GetRequiredService<ILogger<AssemblyWorker>>(),
-                        _serviceProvider.GetRequiredService<WebWorkerAssemblyLoadContext>());
+                var problemDetails = new ProblemDetails
+                {
+                    Title = "Worker already exists",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status302Found
+                };
 
-            var wi = new WorkerInfo(workerService, new CancellationTokenSource());
+                return StatusCode(StatusCodes.Status302Found, problemDetails);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating worker");
 
-            _workerRepo.AddWorker(wi);
+                var problemDetails = new ProblemDetails
+                {
+                    Title = "Other problem",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status500InternalServerError
+                };
 
-            _ = workerService.StartAsync(CancellationToken.None);
+                return StatusCode(StatusCodes.Status500InternalServerError, problemDetails);
+            }
 
             return Ok();
         }
@@ -46,15 +62,49 @@ namespace WebWorker.Controllers
         [HttpDelete("{id:guid}")]
         public IActionResult Delete(Guid id)
         {
-            if (!_workerRepo.ContainsWorker(id))
-                return NotFound($"Worker {id} not found.");
+            try
+            {
+                _workLogic.RemoveWorker(id);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                _logger.LogError(ex, "Error deleting worker");
 
-            var workerInfo = _workerRepo.GetWorker(id);
+                var problemDetails = new ProblemDetails
+                {
+                    Title = "Key not found when deleting worker",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status404NotFound
+                };
 
-            if (workerInfo == null)
-                return BadRequest($"Null worker {id}.");
+                return NotFound(problemDetails);
+            }
+            catch (NullReferenceException ex)
+            {
+                _logger.LogError(ex, "Error deleting worker");
 
-            workerInfo.AssemblyWorker.StopAsync(workerInfo.CancellationTokenSource.Token);
+                var problemDetails = new ProblemDetails
+                {
+                    Title = "Worker info null when deleting worker",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status404NotFound
+                };
+
+                return NotFound(problemDetails);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting worker");
+
+                var problemDetails = new ProblemDetails
+                {
+                    Title = "Other problem",
+                    Detail = ex.Message,
+                    Status = StatusCodes.Status500InternalServerError
+                };
+
+                return StatusCode(StatusCodes.Status500InternalServerError, problemDetails);
+            }
 
             return Ok();
         }

@@ -1,11 +1,14 @@
-﻿using WebWorker.Worker;
+﻿using RabbitMQ.Client;
+using WebWorker.Worker;
 
 namespace WebWorker.Models
 {
-    public class WorkerInfo(AssemblyWorker assemblyWorker, CancellationTokenSource cancellationToken)
+    public class WorkerInfo(WorkerJob assemblyWorker, IModel channel, CancellationTokenSource cancellationToken)
     {
         public CancellationTokenSource CancellationTokenSource { get; } = cancellationToken;
 
-        public AssemblyWorker AssemblyWorker { get; } = assemblyWorker;
+        public IModel GetChannel => channel;
+
+        public WorkerJob AssemblyWorker { get; } = assemblyWorker;
     }
 }
