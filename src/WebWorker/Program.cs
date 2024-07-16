@@ -1,7 +1,7 @@
 using WebWorker.Assembly;
 using WebWorker.Logic;
+using WebWorker.MessageBroker;
 using WebWorker.Models;
-using WebWorker.Queue;
 
 var builder = WebApplication.CreateBuilder(args);
 

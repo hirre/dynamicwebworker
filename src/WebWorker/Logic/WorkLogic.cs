@@ -1,8 +1,8 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using WebWorker.Assembly;
+using WebWorker.MessageBroker;
 using WebWorker.Models;
-using WebWorker.Queue;
 using WebWorker.Worker;
 
 namespace WebWorker.Logic

@@ -1,7 +1,7 @@
 ﻿using RabbitMQ.Client;
 using WebWorker.Models;
 
-namespace WebWorker.Queue
+namespace WebWorker.MessageBroker
 {
     public class RabbitMQConnectionService : IDisposable
     {
