@@ -6,16 +6,10 @@ namespace WebWorker.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WorkerController : ControllerBase
+    public class WorkerController(WorkLogic workLogic, ILogger<WorkerController> logger) : ControllerBase
     {
-        private readonly WorkLogic _workLogic;
-        private readonly ILogger<WorkerController> _logger;
-
-        public WorkerController(WorkLogic workLogic, ILogger<WorkerController> logger)
-        {
-            _workLogic = workLogic;
-            _logger = logger;
-        }
+        private readonly WorkLogic _workLogic = workLogic;
+        private readonly ILogger<WorkerController> _logger = logger;
 
         [HttpPost]
         public IActionResult Post([FromBody] CreateWorkerRequestDto createWorkerRequestDto)
@@ -59,8 +53,8 @@ namespace WebWorker.Controllers
             return Ok();
         }
 
-        [HttpDelete("{id:guid}")]
-        public IActionResult Delete(Guid id)
+        [HttpDelete("{id:string}")]
+        public IActionResult Delete(string id)
         {
             try
             {

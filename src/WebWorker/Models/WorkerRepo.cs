@@ -4,32 +4,32 @@ namespace WebWorker.Models
 {
     public class WorkerRepo
     {
-        private ConcurrentDictionary<Guid, WorkerInfo> _workerInfos = new();
+        private ConcurrentDictionary<string, WorkerData> _workerData = new();
 
-        public void AddWorker(WorkerInfo workerInfo)
+        public void AddWorkerData(WorkerData workerInfo)
         {
-            _workerInfos.TryAdd(workerInfo.AssemblyWorker.Id, workerInfo);
+            _workerData.TryAdd(workerInfo.Worker.Id, workerInfo);
         }
 
-        public bool ContainsWorker(Guid workerId)
+        public bool ContainsWorkerData(string workerId)
         {
-            return _workerInfos.ContainsKey(workerId);
+            return _workerData.ContainsKey(workerId);
         }
 
-        public WorkerInfo? GetWorker(Guid workerId)
+        public WorkerData? GetWorkerData(string workerId)
         {
-            _workerInfos.TryGetValue(workerId, out var workerInfo);
+            _workerData.TryGetValue(workerId, out var workerInfo);
             return workerInfo;
         }
 
-        public void RemoveWorker(Guid workerId)
+        public void RemoveWorkerData(string workerId)
         {
-            _workerInfos.TryRemove(workerId, out _);
+            _workerData.TryRemove(workerId, out _);
         }
 
-        public WorkerInfo[] GetWorkerInfos()
+        public WorkerData[] GetWorkerDataArray()
         {
-            return _workerInfos.Values.ToArray();
+            return [.. _workerData.Values];
         }
     }
 }

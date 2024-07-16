@@ -6,7 +6,7 @@ namespace WebWorker.MessageBroker
     public class RabbitMQConnectionService : IDisposable
     {
         private readonly IConfiguration _configuration;
-        private WorkerRepo _workerRepo;
+        private readonly WorkerRepo _workerRepo;
 
         public required IConnection _connection;
 
@@ -25,7 +25,8 @@ namespace WebWorker.MessageBroker
                 HostName = _configuration["RabbitMQ:HostName"],
                 UserName = _configuration["RabbitMQ:UserName"],
                 Password = _configuration["RabbitMQ:Password"],
-                ClientProvidedName = "WebWorker"
+                ClientProvidedName = "WebWorker",
+                AutomaticRecoveryEnabled = true
             };
 
             _connection = factory.CreateConnection();
@@ -35,7 +36,7 @@ namespace WebWorker.MessageBroker
 
         public void Dispose()
         {
-            foreach (var workerInfo in _workerRepo.GetWorkerInfos())
+            foreach (var workerInfo in _workerRepo.GetWorkerDataArray())
             {
                 workerInfo.GetChannel?.Close();
             }

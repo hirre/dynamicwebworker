@@ -12,10 +12,10 @@ builder.Services.AddSingleton<RabbitMQConnectionService>();
 builder.Services.AddScoped<WorkLogic>();
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddProblemDetails();
+builder.Services.AddLogging();
 
 var app = builder.Build();
 
