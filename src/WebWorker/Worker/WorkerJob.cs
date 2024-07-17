@@ -61,6 +61,7 @@ namespace WebWorker.Worker
                             break;
                         }
 
+                        _logger.LogInformation("Processing message...");
                         // TODO: call _webWorkerAssemblyLoadContext.LoadFromAssemblyPath(assemblyPath) to load the assembly
 
                     }

@@ -1,6 +1,6 @@
 ﻿using WebWorker.Models;
 
-namespace TestMessageProducer
+namespace WebWorkerInterfaces
 {
     public class TestMessage : IMessage
     {

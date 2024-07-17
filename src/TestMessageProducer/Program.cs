@@ -1,7 +1,7 @@
 ﻿using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
-using TestMessageProducer;
+using WebWorkerInterfaces;
 
 var factory = new ConnectionFactory { HostName = "localhost" };
 factory.AutomaticRecoveryEnabled = true;
@@ -26,7 +26,7 @@ while (true)
 {
     var msg = new TestMessage
     {
-        Id = "sys.66ffb158-b224-48b7-83ab-e5c4b6907ebd",
+        Id = "rco.sys.66ffb158-b224-48b7-83ab-e5c4b6907ebd",
         Message = "Hello World!"
     };
 

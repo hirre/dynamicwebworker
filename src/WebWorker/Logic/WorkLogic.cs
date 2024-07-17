@@ -6,6 +6,8 @@ using WebWorker.Assembly;
 using WebWorker.MessageBroker;
 using WebWorker.Models;
 using WebWorker.Worker;
+using WebWorkerInterfaces;
+
 
 namespace WebWorker.Logic
 {
@@ -43,7 +45,7 @@ namespace WebWorker.Logic
 
             channel.QueueBind(queueName, exchangeName, routingKey, null);
 
-            var consumer = new AsyncEventingBasicConsumer(channel);
+            var consumer = new EventingBasicConsumer(channel);
 
             consumer.Received += Consumer_Received;
 
@@ -70,13 +72,13 @@ namespace WebWorker.Logic
             await workerInfo.Worker.StopAsync();
         }
 
-        private async Task Consumer_Received(object sender, BasicDeliverEventArgs ea)
+        private void Consumer_Received(object? sender, BasicDeliverEventArgs ea)
         {
             var body = ea.Body.ToArray();
 
             var msgJsonStr = Encoding.UTF8.GetString(body);
 
-            var msg = JsonSerializer.Deserialize<IMessage>(msgJsonStr);
+            var msg = JsonSerializer.Deserialize<TestMessage>(msgJsonStr);
 
             if (msg != null)
             {
@@ -85,8 +87,6 @@ namespace WebWorker.Logic
                 workerData?.Worker.SignalMessageEvent(msg);
                 workerData?.GetChannel.BasicAck(ea.DeliveryTag, false);
             }
-
-            await Task.Yield();
         }
     }
 }
