@@ -5,7 +5,11 @@ VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebWorker", "WebWorker\WebWorker.csproj", "{C9062F08-E56C-4F4E-8F79-067B2AB745B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWork", "TestWork\TestWork.csproj", "{1DE6B8F4-1996-4A00-B72E-BF3F3B940EA2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestWork", "TestWork\TestWork.csproj", "{1DE6B8F4-1996-4A00-B72E-BF3F3B940EA2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{BB8639D6-467B-4E09-B95F-995165BB037D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebWorkerInterfaces", "WebWorkerInterfaces\WebWorkerInterfaces.csproj", "{0E72F385-9B18-4DCB-BD43-DE3D28E937CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,9 +25,16 @@ Global
 		{1DE6B8F4-1996-4A00-B72E-BF3F3B940EA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1DE6B8F4-1996-4A00-B72E-BF3F3B940EA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1DE6B8F4-1996-4A00-B72E-BF3F3B940EA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E72F385-9B18-4DCB-BD43-DE3D28E937CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E72F385-9B18-4DCB-BD43-DE3D28E937CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E72F385-9B18-4DCB-BD43-DE3D28E937CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E72F385-9B18-4DCB-BD43-DE3D28E937CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1DE6B8F4-1996-4A00-B72E-BF3F3B940EA2} = {BB8639D6-467B-4E09-B95F-995165BB037D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {238DE231-7486-4C3B-956D-EA9E72AEE689}

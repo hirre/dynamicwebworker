@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using WebWorkerInterfaces;
 
-namespace TestWork
+namespace Test.TestWork
 {
-    public class SomeWork : BackgroundService
+    public class SomeWork : IWork
     {
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task ExecuteWork(CancellationToken stoppingToken)
         {
             // Do some important work here
             Console.WriteLine("Super important work is being done here...");
