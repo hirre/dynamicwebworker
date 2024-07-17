@@ -1,6 +1,6 @@
 # WebWorker
 
-WebWorker is a worker service that can dynamically be loaded with a number of worker threads using REST calls. The workers can based on incoming messages process some work which are located in separate libraries that are also loaded dynamically.
+WebWorker is a worker service that can dynamically be loaded with a number of worker threads using REST calls. The workers can (based on incoming messages) process some work which are located in separate libraries that are also loaded dynamically.
 
 ## RabbitMQ Installation & Running with Docker
 ```
@@ -10,7 +10,7 @@ docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 
 ## Code Structure
 - **WebWorker** is the main worker service
-  - Dynamically work libraries are put as subfolders in /Work/* (they can be built with the publish command)
+  - Dynamically loaded work libraries are put as subfolders in /Work/* (they can be built with the publish command)
 - **WebWorkerInterfaces** is library with shared interfaces and models
 - **TestMessageProducer** is a test library to produce RabbitMQ messages
 - **TestWork** is a test library which implements an interface that the WebWorker dynamically loads and runs
