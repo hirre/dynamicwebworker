@@ -1,5 +1,7 @@
 # WebWorker
 
+WebWorker is a worker service that can dynamically be loaded with a number of worker threads using REST calls. The workers can based on incoming messages process some work which are located in separate libraries that are also loaded dynamically.
+
 ## RabbitMQ Installation & Running with Docker
 ```
 docker pull rabbitmq:3-management
