@@ -21,5 +21,5 @@ docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 ### Overview
 ![image](https://github.com/user-attachments/assets/183d6cff-18d3-4c33-8187-3d18dfc31a0f)
 
-### Type of queue used
+### Type of queue used for permanent workers
 ![image](https://github.com/user-attachments/assets/88ee5d20-51fb-406d-9b77-ff6ea73538f5)
