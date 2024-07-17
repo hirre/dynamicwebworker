@@ -31,7 +31,7 @@ namespace WebWorker.Logic
             var channel = conn.CreateModel();
             var queueName = createWorkerRequestDto.WorkerId;
             var exchangeName = "exchange." + queueName;
-            var routingKey = "route." + exchangeName;
+            var routingKey = "route." + queueName;
 
             channel.ExchangeDeclare(exchangeName, ExchangeType.Direct);
 
