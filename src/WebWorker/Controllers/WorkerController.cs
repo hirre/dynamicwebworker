@@ -12,7 +12,7 @@ namespace WebWorker.Controllers
         private readonly ILogger<WorkerController> _logger = logger;
 
         [HttpPost]
-        public IActionResult Post([FromBody] CreateWorkerRequestDto createWorkerRequestDto)
+        public async Task<IActionResult> Post([FromBody] CreateWorkerRequestDto createWorkerRequestDto)
         {
             if (!ModelState.IsValid)
             {
@@ -21,7 +21,7 @@ namespace WebWorker.Controllers
 
             try
             {
-                _workLogic.CreateWorker(createWorkerRequestDto);
+                await _workLogic.CreateWorker(createWorkerRequestDto);
             }
             catch (DuplicateWaitObjectException ex)
             {
@@ -53,12 +53,12 @@ namespace WebWorker.Controllers
             return Ok();
         }
 
-        [HttpDelete("{id:string}")]
-        public IActionResult Delete(string id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
         {
             try
             {
-                _workLogic.RemoveWorker(id);
+                await _workLogic.RemoveWorker(id);
             }
             catch (KeyNotFoundException ex)
             {

@@ -19,13 +19,13 @@ namespace WebWorker.Logic
         private readonly WorkerRepo _workerRepo = workerRepo;
         private readonly ILogger<WorkLogic> _logger = logger;
 
-        public void CreateWorker(CreateWorkerRequestDto createWorkerRequestDto)
+        public async Task CreateWorker(CreateWorkerRequestDto createWorkerRequestDto)
         {
             if (_workerRepo.ContainsWorkerData(createWorkerRequestDto.WorkerId))
                 throw new DuplicateWaitObjectException($"Worker {createWorkerRequestDto.WorkerId} already exists.");
 
             var workerService = new WorkerJob(createWorkerRequestDto.WorkerId, _serviceProvider.GetRequiredService<ILogger<WorkerJob>>(),
-                        _serviceProvider.GetRequiredService<WebWorkerAssemblyLoadContext>());
+                        _serviceProvider.GetRequiredService<WebWorkerAssemblyLoadContext>(), new CancellationTokenSource());
 
             var conn = _rabbitMQConnectionService.GetConnection();
             var channel = conn.CreateModel();
@@ -47,25 +47,27 @@ namespace WebWorker.Logic
 
             consumer.Received += Consumer_Received;
 
-            var wd = new WorkerData(workerService, channel, new CancellationTokenSource());
+            var wd = new WorkerData(workerService, channel);
 
             _workerRepo.AddWorkerData(wd);
 
-            _ = workerService.StartAsync(CancellationToken.None);
+            workerService.Start();
 
             channel.BasicConsume(queue: queueName,
                                  autoAck: false,
                                  consumer: consumer);
+
+            await Task.Yield();
         }
 
-        public void RemoveWorker(string id)
+        public async Task RemoveWorker(string id)
         {
             if (!_workerRepo.ContainsWorkerData(id))
                 throw new KeyNotFoundException($"Worker {id} not found.");
 
             var workerInfo = _workerRepo.GetWorkerData(id) ?? throw new NullReferenceException($"Null worker {id}.");
 
-            workerInfo.Worker.StopAsync(workerInfo.CancellationTokenSource.Token);
+            await workerInfo.Worker.StopAsync();
         }
 
         private async Task Consumer_Received(object sender, BasicDeliverEventArgs ea)
