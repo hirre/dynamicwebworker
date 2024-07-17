@@ -16,7 +16,7 @@ docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 - **TestWork** is a test library which implements an interface that the WebWorker dynamically loads and runs
   - Should be built with publish command and put as a subfolder in the /Work folder
  
-## Prototype 
+## Architecture 
 
 ### Overview
 ![image](https://github.com/user-attachments/assets/183d6cff-18d3-4c33-8187-3d18dfc31a0f)
