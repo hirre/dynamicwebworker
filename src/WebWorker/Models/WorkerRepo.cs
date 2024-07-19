@@ -31,5 +31,10 @@ namespace WebWorker.Models
         {
             return [.. _workerData.Values];
         }
+
+        public int GetWorkerDataCount()
+        {
+            return _workerData.Count;
+        }
     }
 }

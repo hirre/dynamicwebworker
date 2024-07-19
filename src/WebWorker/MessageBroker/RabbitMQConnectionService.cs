@@ -5,7 +5,16 @@ namespace WebWorker.MessageBroker
 {
     public class RabbitMQConnectionService : IDisposable
     {
+        #region Configuration keys
+
         private const int DEFAULT_PORT = 5672;
+        private const string RABBITMQ_HOSTNAME = "RabbitMQ:HostName";
+        private const string RABBITMQ_USERNAME = "RabbitMQ:UserName";
+        private const string RABBITMQ_PASSWORD = "RabbitMQ:Password";
+        private const string RABBITMQ_PORT = "RabbitMQ:Port";
+        private const string RABBITMQ_AUTORECOVERY = "RabbitMQ:AutomaticRecoveryEnabled";
+
+        #endregion
 
         private readonly IConfiguration _configuration;
         private readonly WorkerRepo _workerRepo;
@@ -24,12 +33,12 @@ namespace WebWorker.MessageBroker
         {
             var factory = new ConnectionFactory()
             {
-                HostName = _configuration["RabbitMQ:HostName"],
-                UserName = _configuration["RabbitMQ:UserName"],
-                Password = _configuration["RabbitMQ:Password"],
-                Port = int.TryParse(_configuration["RabbitMQ:Port"], out var port) ? port : DEFAULT_PORT,
+                HostName = _configuration[RABBITMQ_HOSTNAME],
+                UserName = _configuration[RABBITMQ_USERNAME],
+                Password = _configuration[RABBITMQ_PASSWORD],
+                Port = int.TryParse(_configuration[RABBITMQ_PORT], out var port) ? port : DEFAULT_PORT,
                 ClientProvidedName = "WebWorker",
-                AutomaticRecoveryEnabled = bool.TryParse(_configuration["RabbitMQ:AutomaticRecoveryEnabled"], out var areVal) && areVal
+                AutomaticRecoveryEnabled = bool.TryParse(_configuration[RABBITMQ_AUTORECOVERY], out var areVal) && areVal
             };
 
             _connection = factory.CreateConnection();
