@@ -37,27 +37,7 @@ namespace WebWorker.Logic
             var exchangeName = "exchange." + queueName;
             var routingKey = "route." + queueName;
 
-            channel.ExchangeDeclare(exchangeName, ExchangeType.Direct);
-
-            // Declare the queue with the single active consumer argument
-            var arguments = new Dictionary<string, object>
-            {
-                { "x-single-active-consumer", true }
-            };
-
-            channel.QueueDeclare(queue: queueName,
-                                 durable: true,
-                                 exclusive: false,
-                                 autoDelete: false,
-                                 arguments: arguments);
-
-            channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
-
-            channel.QueueBind(queueName, exchangeName, routingKey, null);
-
-            var consumer = new EventingBasicConsumer(channel);
-
-            consumer.Received += Consumer_Received;
+            var consumer = InitializeRabbitMQ(channel, exchangeName, queueName, routingKey);
 
             var wd = new WorkerData(workerService, channel);
 
@@ -65,8 +45,10 @@ namespace WebWorker.Logic
 
             workerService.Start();
 
+            var autoAckValue = bool.TryParse(_configuration["RabbitMQ:AutoAck"], out var ackVal) && ackVal;
+
             channel.BasicConsume(queue: queueName,
-                                 autoAck: false,
+                                 autoAck: autoAckValue,
                                  consumer: consumer);
 
             await Task.Yield();
@@ -95,8 +77,65 @@ namespace WebWorker.Logic
                 var workerData = _workerRepo.GetWorkerData(msg.Id);
 
                 workerData?.Worker.SignalMessageEvent(msg);
-                workerData?.GetChannel.BasicAck(ea.DeliveryTag, false);
+
+                var autoAckValue = bool.TryParse(_configuration["RabbitMQ:AutoAck"], out var ackVal) && ackVal;
+
+                if (!autoAckValue)
+                    workerData?.GetChannel.BasicAck(ea.DeliveryTag, false);
             }
+        }
+
+        private EventingBasicConsumer InitializeRabbitMQ(IModel channel, string exchangeName, string queueName, string routingKey)
+        {
+            var durableValue = bool.TryParse(_configuration["RabbitMQ:Durable"], out var durVal) && durVal;
+            var exclusiveValue = bool.TryParse(_configuration["RabbitMQ:Exclusive"], out var exclVal) && exclVal;
+            var autoDeleteValue = bool.TryParse(_configuration["RabbitMQ:AutoDelete"], out var autoDelVal) && autoDelVal;
+            var exchangeType = string.IsNullOrEmpty(_configuration["RabbitMQ:ExchangeType"]) ? ExchangeType.Direct : _configuration["RabbitMQ:ExchangeType"];
+            var channelQosPrefetchSize = uint.TryParse(_configuration["RabbitMQ:ChannelQos:PrefetchSize"], out var qosPrefetchSize) ? qosPrefetchSize : 0;
+            var channelQosPrefetchCount = ushort.TryParse(_configuration["RabbitMQ:ChannelQos:PrefetchCount"], out var qosPrefetchCount) ? qosPrefetchCount : (ushort)1;
+            var channelQosGlobal = bool.TryParse(_configuration["RabbitMQ:ChannelQos:Global"], out var qosGlobal) && qosGlobal;
+
+            channel.ExchangeDeclare(exchangeName, exchangeType);
+
+            channel.QueueDeclare(queue: queueName,
+                                 durable: durableValue,
+                                 exclusive: exclusiveValue,
+                                 autoDelete: autoDeleteValue,
+                                 arguments: LoadArguments("RabbitMQ:QueueArguments"));
+
+            channel.BasicQos(prefetchSize: channelQosPrefetchSize, prefetchCount: channelQosPrefetchCount, global: channelQosGlobal);
+
+            channel.QueueBind(queueName, exchangeName, routingKey, LoadArguments("RabbitMQ:QueueBindArguments"));
+
+            var consumer = new EventingBasicConsumer(channel);
+
+            consumer.Received += Consumer_Received;
+
+            return consumer;
+        }
+
+        private Dictionary<string, object>? LoadArguments(string sectionName)
+        {
+            var argsSection = _configuration.GetSection(sectionName);
+
+            var arguments = new Dictionary<string, object>();
+
+            argsSection.GetChildren().AsEnumerable().ToList().ForEach(x =>
+            {
+                if (x.Value != null)
+                {
+                    if (bool.TryParse(x.Value, out bool boolValue))
+                        arguments.Add(x.Key, boolValue);
+                    else if (int.TryParse(x.Value, out int intValue))
+                        arguments.Add(x.Key, intValue);
+                    else if (double.TryParse(x.Value, out var doubleValue))
+                        arguments.Add(x.Key, doubleValue);
+                    else
+                        arguments.Add(x.Key, x.Value);
+                }
+            });
+
+            return arguments.Count != 0 ? arguments : null;
         }
     }
 }

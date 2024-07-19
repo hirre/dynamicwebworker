@@ -5,6 +5,8 @@ namespace WebWorker.MessageBroker
 {
     public class RabbitMQConnectionService : IDisposable
     {
+        private const int DEFAULT_PORT = 5672;
+
         private readonly IConfiguration _configuration;
         private readonly WorkerRepo _workerRepo;
 
@@ -25,8 +27,9 @@ namespace WebWorker.MessageBroker
                 HostName = _configuration["RabbitMQ:HostName"],
                 UserName = _configuration["RabbitMQ:UserName"],
                 Password = _configuration["RabbitMQ:Password"],
+                Port = int.TryParse(_configuration["RabbitMQ:Port"], out var port) ? port : DEFAULT_PORT,
                 ClientProvidedName = "WebWorker",
-                AutomaticRecoveryEnabled = true
+                AutomaticRecoveryEnabled = bool.TryParse(_configuration["RabbitMQ:AutomaticRecoveryEnabled"], out var areVal) && areVal
             };
 
             _connection = factory.CreateConnection();
