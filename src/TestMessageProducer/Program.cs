@@ -15,12 +15,19 @@ var queueName = "rco.sys.66ffb158-b224-48b7-83ab-e5c4b6907ebd";
 var exchangeName = "exchange." + queueName;
 var routeKey = "route." + queueName;
 
+// Declare the queue with the single active consumer argument
+var arguments = new Dictionary<string, object>
+            {
+                { "x-single-active-consumer", true }
+            };
+
 channel.QueueDeclare(queue: queueName,
                      durable: true,
                      exclusive: false,
                      autoDelete: false,
-                     arguments: null);
+                     arguments: arguments);
 
+channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
 
 while (true)
 {

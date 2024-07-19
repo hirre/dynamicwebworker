@@ -11,11 +11,13 @@ using WebWorkerInterfaces;
 
 namespace WebWorker.Logic
 {
-    public class WorkLogic(IServiceProvider serviceProvider,
+    public class WorkLogic(IConfiguration configuration,
+        IServiceProvider serviceProvider,
         RabbitMQConnectionService rabbitMQConnectionService,
         WorkerRepo workerRepo,
         ILogger<WorkLogic> logger)
     {
+        private readonly IConfiguration _configuration = configuration;
         private readonly IServiceProvider _serviceProvider = serviceProvider;
         private readonly RabbitMQConnectionService _rabbitMQConnectionService = rabbitMQConnectionService;
         private readonly WorkerRepo _workerRepo = workerRepo;
@@ -37,11 +39,19 @@ namespace WebWorker.Logic
 
             channel.ExchangeDeclare(exchangeName, ExchangeType.Direct);
 
+            // Declare the queue with the single active consumer argument
+            var arguments = new Dictionary<string, object>
+            {
+                { "x-single-active-consumer", true }
+            };
+
             channel.QueueDeclare(queue: queueName,
                                  durable: true,
                                  exclusive: false,
                                  autoDelete: false,
-                                 arguments: null);
+                                 arguments: arguments);
+
+            channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
 
             channel.QueueBind(queueName, exchangeName, routingKey, null);
 
