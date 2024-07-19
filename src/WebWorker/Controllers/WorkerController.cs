@@ -6,9 +6,9 @@ namespace WebWorker.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WorkerController(WorkLogic workLogic, ILogger<WorkerController> logger) : ControllerBase
+    public class WorkerController(WorkerLogic workLogic, ILogger<WorkerController> logger) : ControllerBase
     {
-        private readonly WorkLogic _workLogic = workLogic;
+        private readonly WorkerLogic _workLogic = workLogic;
         private readonly ILogger<WorkerController> _logger = logger;
 
         [HttpPost]

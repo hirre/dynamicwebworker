@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<WebWorkerAssemblyLoadContext>();
 builder.Services.AddSingleton<WorkerRepo>();
 builder.Services.AddSingleton<RabbitMQConnectionService>();
-builder.Services.AddScoped<WorkLogic>();
+builder.Services.AddScoped<WorkerLogic>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

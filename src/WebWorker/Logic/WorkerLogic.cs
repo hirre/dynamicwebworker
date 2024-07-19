@@ -11,11 +11,11 @@ using WebWorkerInterfaces;
 
 namespace WebWorker.Logic
 {
-    public class WorkLogic(IConfiguration configuration,
+    public class WorkerLogic(IConfiguration configuration,
         IServiceProvider serviceProvider,
         RabbitMQConnectionService rabbitMQConnectionService,
         WorkerRepo workerRepo,
-        ILogger<WorkLogic> logger)
+        ILogger<WorkerLogic> logger)
     {
         #region Configuration keys
 
@@ -37,7 +37,7 @@ namespace WebWorker.Logic
         private readonly IServiceProvider _serviceProvider = serviceProvider;
         private readonly RabbitMQConnectionService _rabbitMQConnectionService = rabbitMQConnectionService;
         private readonly WorkerRepo _workerRepo = workerRepo;
-        private readonly ILogger<WorkLogic> _logger = logger;
+        private readonly ILogger<WorkerLogic> _logger = logger;
 
         public async Task CreateWorker(CreateWorkerRequestDto createWorkerRequestDto)
         {
