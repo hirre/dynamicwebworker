@@ -13,14 +13,14 @@ namespace WebWorker.Models
             _workerData.TryAdd(workerData.Worker.Id, workerData);
         }
 
-        public void AddChannel(string workerId, IModel channel)
+        public void AddChannel(string id, IModel channel)
         {
-            _channels.TryAdd(workerId, channel);
+            _channels.TryAdd(id, channel);
         }
 
-        public bool ContainsWorkerData(string workerId)
+        public bool ContainsWorkerData(string id)
         {
-            return _workerData.ContainsKey(workerId);
+            return _workerData.ContainsKey(id);
         }
 
         public WorkerData? GetWorkerData(string workerData)
@@ -29,16 +29,16 @@ namespace WebWorker.Models
             return wd;
         }
 
-        public IModel? GetChannel(string workerId)
+        public IModel? GetChannel(string id)
         {
-            _channels.TryGetValue(workerId, out var channel);
+            _channels.TryGetValue(id, out var channel);
             return channel;
         }
 
-        public void RemoveWorkerData(string workerId)
+        public void RemoveWorkerData(string id)
         {
-            _workerData.TryRemove(workerId, out _);
-            _channels.TryRemove(workerId, out _);
+            _workerData.TryRemove(id, out _);
+            _channels.TryRemove(id, out _);
         }
 
         public WorkerData[] GetWorkerDataArray()

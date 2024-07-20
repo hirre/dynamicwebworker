@@ -5,7 +5,7 @@ using WebWorker.Models;
 
 namespace WebWorker.Worker
 {
-    public class WorkerJob(string workerId, ILogger<WorkerJob> logger, WebWorkerAssemblyLoadContext webWorkerAssemblyLoadContext,
+    public class WorkerJob(string id, ILogger<WorkerJob> logger, WebWorkerAssemblyLoadContext webWorkerAssemblyLoadContext,
         CancellationTokenSource cancellationTokenSource)
     {
 #pragma warning disable CS9124 // Parameter is captured into the state of the enclosing type and its value is also used to initialize a field, property, or event.
@@ -18,7 +18,7 @@ namespace WebWorker.Worker
         private readonly ConcurrentQueue<IMessage> _messageQueue = new();
         private bool _jobCreated;
 
-        public string Id { get; } = workerId;
+        public string Id { get; } = id;
 
         public void Start()
         {

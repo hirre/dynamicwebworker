@@ -36,12 +36,12 @@ namespace WebWorker.Logic
             if (_workerRepo.GetWorkerDataCount() + 1 > maxWorkers)
                 throw new InvalidOperationException("Maximum number of workers reached.");
 
-            if (_workerRepo.ContainsWorkerData(createWorkerRequestDto.WorkerId))
-                throw new DuplicateWaitObjectException($"Worker {createWorkerRequestDto.WorkerId} already exists.");
+            if (_workerRepo.ContainsWorkerData(createWorkerRequestDto.UniqueQueueId))
+                throw new DuplicateWaitObjectException($"Worker {createWorkerRequestDto.UniqueQueueId} already exists.");
 
             var conn = _rabbitMQConnectionService.GetConnection();
             var channel = conn.CreateModel();
-            var queueName = createWorkerRequestDto.WorkerId;
+            var queueName = createWorkerRequestDto.UniqueQueueId;
             var exchangeName = "exchange." + queueName;
             var routingKey = "route." + queueName;
 
@@ -51,7 +51,7 @@ namespace WebWorker.Logic
 
             if (!useThreadPool)
             {
-                var workerService = new WorkerJob(createWorkerRequestDto.WorkerId, _serviceProvider.GetRequiredService<ILogger<WorkerJob>>(),
+                var workerService = new WorkerJob(routingKey, _serviceProvider.GetRequiredService<ILogger<WorkerJob>>(),
                             _serviceProvider.GetRequiredService<WebWorkerAssemblyLoadContext>(), new CancellationTokenSource());
 
                 var wd = new WorkerData(workerService);
@@ -61,7 +61,7 @@ namespace WebWorker.Logic
                 workerService.Start();
             }
 
-            _workerRepo.AddChannel(createWorkerRequestDto.WorkerId, channel);
+            _workerRepo.AddChannel(routingKey, channel);
 
             var autoAckValue = bool.TryParse(_configuration[Constants.RABBITMQ_QUEUE_AUTOACK], out var ackVal) && ackVal;
 
@@ -95,8 +95,8 @@ namespace WebWorker.Logic
                 var useThreadPool = bool.TryParse(_configuration[Constants.WEBWORKER_USE_THREADPOOL], out var tPool) && tPool;
                 var autoAckValue = bool.TryParse(_configuration[Constants.RABBITMQ_QUEUE_AUTOACK], out var ackVal) && ackVal;
 
-                var workerData = _workerRepo.GetWorkerData(msg.WorkerId);
-                var channel = _workerRepo.GetChannel(msg.WorkerId);
+                var workerData = _workerRepo.GetWorkerData(ea.RoutingKey);
+                var channel = _workerRepo.GetChannel(ea.RoutingKey);
 
                 if (useThreadPool)
                 {

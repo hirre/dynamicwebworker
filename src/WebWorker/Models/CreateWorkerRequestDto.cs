@@ -2,6 +2,6 @@
 {
     public class CreateWorkerRequestDto
     {
-        public required string WorkerId { get; set; }
+        public required string UniqueQueueId { get; set; }
     }
 }
