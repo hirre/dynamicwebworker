@@ -17,12 +17,6 @@ namespace WebWorker.Logic
         WorkerRepo workerRepo,
         ILogger<WorkerLogic> logger)
     {
-        #region Configuration keys
-
-
-
-        #endregion
-
         private readonly IConfiguration _configuration = configuration;
         private readonly IServiceProvider _serviceProvider = serviceProvider;
         private readonly RabbitMQConnectionService _rabbitMQConnectionService = rabbitMQConnectionService;
@@ -80,6 +74,8 @@ namespace WebWorker.Logic
             var workerInfo = _workerRepo.GetWorkerData(id) ?? throw new NullReferenceException($"Null worker {id}.");
 
             await workerInfo.Worker.StopAsync();
+
+            _workerRepo.GetChannel(id)?.Close();
         }
 
         private void Consumer_Received(object? sender, BasicDeliverEventArgs ea)

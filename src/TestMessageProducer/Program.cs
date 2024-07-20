@@ -33,7 +33,6 @@ while (true)
 {
     var msg = new TestMessage
     {
-        WorkerId = "rco.sys.66ffb158-b224-48b7-83ab-e5c4b6907ebd",
         Message = "Hello World!"
     };
 
