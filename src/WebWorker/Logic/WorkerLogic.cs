@@ -31,16 +31,13 @@ namespace WebWorker.Logic
 
         public async Task CreateWorker(CreateWorkerRequestDto createWorkerRequestDto)
         {
-            var maxWorkers = int.TryParse(_configuration["MAX_WORKERS"], out var maxWorkersVal) ? maxWorkersVal : 400;
+            var maxWorkers = int.TryParse(_configuration[Constants.WEBWORKER_MAX_WORKERS], out var maxWorkersVal) ? maxWorkersVal : 400;
 
             if (_workerRepo.GetWorkerDataCount() + 1 > maxWorkers)
                 throw new InvalidOperationException("Maximum number of workers reached.");
 
             if (_workerRepo.ContainsWorkerData(createWorkerRequestDto.WorkerId))
                 throw new DuplicateWaitObjectException($"Worker {createWorkerRequestDto.WorkerId} already exists.");
-
-            var workerService = new WorkerJob(createWorkerRequestDto.WorkerId, _serviceProvider.GetRequiredService<ILogger<WorkerJob>>(),
-                        _serviceProvider.GetRequiredService<WebWorkerAssemblyLoadContext>(), new CancellationTokenSource());
 
             var conn = _rabbitMQConnectionService.GetConnection();
             var channel = conn.CreateModel();
@@ -50,11 +47,21 @@ namespace WebWorker.Logic
 
             var consumer = InitializeRabbitMQ(channel, exchangeName, queueName, routingKey);
 
-            var wd = new WorkerData(workerService, channel);
+            var useThreadPool = bool.TryParse(_configuration[Constants.WEBWORKER_USE_THREADPOOL], out var tPool) && tPool;
 
-            _workerRepo.AddWorkerData(wd);
+            if (!useThreadPool)
+            {
+                var workerService = new WorkerJob(createWorkerRequestDto.WorkerId, _serviceProvider.GetRequiredService<ILogger<WorkerJob>>(),
+                            _serviceProvider.GetRequiredService<WebWorkerAssemblyLoadContext>(), new CancellationTokenSource());
 
-            workerService.Start();
+                var wd = new WorkerData(workerService);
+
+                _workerRepo.AddWorkerData(wd);
+
+                workerService.Start();
+            }
+
+            _workerRepo.AddChannel(createWorkerRequestDto.WorkerId, channel);
 
             var autoAckValue = bool.TryParse(_configuration[Constants.RABBITMQ_QUEUE_AUTOACK], out var ackVal) && ackVal;
 
@@ -85,14 +92,25 @@ namespace WebWorker.Logic
 
             if (msg != null)
             {
-                var workerData = _workerRepo.GetWorkerData(msg.Id);
-
-                workerData?.Worker.SignalMessageEvent(msg);
-
+                var useThreadPool = bool.TryParse(_configuration[Constants.WEBWORKER_USE_THREADPOOL], out var tPool) && tPool;
                 var autoAckValue = bool.TryParse(_configuration[Constants.RABBITMQ_QUEUE_AUTOACK], out var ackVal) && ackVal;
 
+                var workerData = _workerRepo.GetWorkerData(msg.WorkerId);
+                var channel = _workerRepo.GetChannel(msg.WorkerId);
+
+                if (useThreadPool)
+                {
+                    var threadPoolWorkHandler = new ThreadPoolWorkHandler();
+
+                    Task.Run(() => threadPoolWorkHandler.Execute(msg));
+                }
+                else
+                {
+                    workerData?.Worker.SignalMessageEvent(msg);
+                }
+
                 if (!autoAckValue)
-                    workerData?.GetChannel.BasicAck(ea.DeliveryTag, false);
+                    channel?.BasicAck(ea.DeliveryTag, false);
             }
         }
 

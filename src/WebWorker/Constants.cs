@@ -4,7 +4,8 @@
     {
         #region Configuration keys
 
-        public const string MAX_WORKERS = "MaxWorkers";
+        public const string WEBWORKER_MAX_WORKERS = "MaxWorkers";
+        public const string WEBWORKER_USE_THREADPOOL = "UseThreadPool";
         public const string RABBITMQ_HOSTNAME = "RabbitMQ:HostName";
         public const string RABBITMQ_USERNAME = "RabbitMQ:UserName";
         public const string RABBITMQ_PASSWORD = "RabbitMQ:Password";

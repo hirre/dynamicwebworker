@@ -2,6 +2,6 @@
 {
     public interface IMessage
     {
-        string Id { get; }
+        string WorkerId { get; }
     }
 }

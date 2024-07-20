@@ -37,9 +37,9 @@ namespace WebWorker.MessageBroker
 
         public void Dispose()
         {
-            foreach (var workerInfo in _workerRepo.GetWorkerDataArray())
+            foreach (var channel in _workerRepo.GetChannelArray())
             {
-                workerInfo.GetChannel?.Close();
+                channel?.Close();
             }
 
             _connection?.Close();
