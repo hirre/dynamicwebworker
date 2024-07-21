@@ -46,10 +46,10 @@ namespace WebWorker.Services
             var exchangeName = "exchange." + queueName;
             var routingKey = "route." + queueName;
 
-            if (_workerRepo.GetWorkerDataCount() + 1 > maxWorkers)
+            if (_workerRepo.GetWorkerJobCount() + 1 > maxWorkers)
                 throw new MaxWorkerLimitReachedException("Maximum number of workers reached");
 
-            if (_workerRepo.ContainsWorkerData(routingKey))
+            if (_workerRepo.ContainsWorkerJob(routingKey))
                 throw new DuplicateWorkerException($"Worker {createWorkerRequestDto.UniqueQueueId} already exists.");
 
             var conn = _rabbitMQConnectionService.GetConnection();
@@ -61,14 +61,12 @@ namespace WebWorker.Services
 
             if (!useThreadPool)
             {
-                var workerService = new WorkerJob(routingKey, _serviceProvider.GetRequiredService<ILogger<WorkerJob>>(),
+                var wJob = new WorkerJob(routingKey, _serviceProvider.GetRequiredService<ILogger<WorkerJob>>(),
                             _serviceProvider.GetRequiredService<WebWorkerAssemblyLoadContext>(), new CancellationTokenSource());
 
-                var wd = new WorkerData(workerService);
+                _workerRepo.AddWorkerJob(wJob);
 
-                _workerRepo.AddWorkerData(wd);
-
-                workerService.Start();
+                wJob.Start();
             }
 
             _workerRepo.AddChannel(routingKey, channel);
@@ -91,12 +89,12 @@ namespace WebWorker.Services
         /// <exception cref="NullReferenceException">If the worker object is null</exception>
         public async Task RemoveWorker(string id)
         {
-            if (!_workerRepo.ContainsWorkerData(id))
+            if (!_workerRepo.ContainsWorkerJob(id))
                 throw new WorkerNotFoundException($"Worker {id} not found.");
 
-            var workerInfo = _workerRepo.GetWorkerData(id) ?? throw new NullReferenceException($"Null worker {id}.");
+            var workerJob = _workerRepo.GetWorkerJob(id) ?? throw new NullReferenceException($"Null worker {id}.");
 
-            workerInfo.Worker.Stop();
+            workerJob.Stop();
 
             _workerRepo.GetChannel(id)?.Close();
 
@@ -121,7 +119,7 @@ namespace WebWorker.Services
                 var useThreadPool = bool.TryParse(_configuration[Constants.WEBWORKER_USE_THREADPOOL], out var tPool) && tPool;
                 var autoAckValue = bool.TryParse(_configuration[Constants.RABBITMQ_QUEUE_AUTOACK], out var ackVal) && ackVal;
 
-                var workerData = _workerRepo.GetWorkerData(ea.RoutingKey);
+                var workerJob = _workerRepo.GetWorkerJob(ea.RoutingKey);
                 var channel = _workerRepo.GetChannel(ea.RoutingKey);
 
                 if (useThreadPool)
@@ -132,7 +130,7 @@ namespace WebWorker.Services
                 }
                 else
                 {
-                    workerData?.Worker.SignalMessageEvent(msg);
+                    workerJob?.SignalMessageEvent(msg);
                 }
 
                 if (!autoAckValue)

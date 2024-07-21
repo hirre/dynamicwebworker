@@ -1,5 +1,6 @@
 ﻿using RabbitMQ.Client;
 using System.Collections.Concurrent;
+using WebWorker.Worker;
 
 namespace WebWorker.Models
 {
@@ -8,12 +9,12 @@ namespace WebWorker.Models
     /// </summary>
     public class WorkerRepo
     {
-        private ConcurrentDictionary<string, WorkerData> _workerData = new();
+        private ConcurrentDictionary<string, WorkerJob> _workerJobs = new();
         private ConcurrentDictionary<string, IModel> _channels = new();
 
-        public void AddWorkerData(WorkerData workerData)
+        public void AddWorkerJob(WorkerJob workerJob)
         {
-            _workerData.TryAdd(workerData.Worker.Id, workerData);
+            _workerJobs.TryAdd(workerJob.Id, workerJob);
         }
 
         public void AddChannel(string id, IModel channel)
@@ -21,15 +22,15 @@ namespace WebWorker.Models
             _channels.TryAdd(id, channel);
         }
 
-        public bool ContainsWorkerData(string id)
+        public bool ContainsWorkerJob(string id)
         {
-            return _workerData.ContainsKey(id);
+            return _workerJobs.ContainsKey(id);
         }
 
-        public WorkerData? GetWorkerData(string workerData)
+        public WorkerJob? GetWorkerJob(string workerJob)
         {
-            _workerData.TryGetValue(workerData, out var wd);
-            return wd;
+            _workerJobs.TryGetValue(workerJob, out var wj);
+            return wj;
         }
 
         public IModel? GetChannel(string id)
@@ -38,15 +39,15 @@ namespace WebWorker.Models
             return channel;
         }
 
-        public void RemoveWorkerData(string id)
+        public void RemoveWorkerJob(string id)
         {
-            _workerData.TryRemove(id, out _);
+            _workerJobs.TryRemove(id, out _);
             _channels.TryRemove(id, out _);
         }
 
-        public WorkerData[] GetWorkerDataArray()
+        public WorkerJob[] GetWorkerJobArray()
         {
-            return [.. _workerData.Values];
+            return [.. _workerJobs.Values];
         }
 
         public IModel[] GetChannelArray()
@@ -54,9 +55,9 @@ namespace WebWorker.Models
             return [.. _channels.Values];
         }
 
-        public int GetWorkerDataCount()
+        public int GetWorkerJobCount()
         {
-            return _workerData.Count;
+            return _workerJobs.Count;
         }
 
         public int GetChannelCount()
