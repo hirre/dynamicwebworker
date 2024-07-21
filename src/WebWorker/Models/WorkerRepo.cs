@@ -1,6 +1,6 @@
 ﻿using RabbitMQ.Client;
 using System.Collections.Concurrent;
-using WebWorker.Worker;
+using WebWorker.Services.Worker;
 
 namespace WebWorker.Models
 {

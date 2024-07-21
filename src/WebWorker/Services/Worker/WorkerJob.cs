@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using WebWorker.Assembly;
 using WebWorker.Models;
 
-namespace WebWorker.Worker
+namespace WebWorker.Services.Worker
 {
     /// <summary>
     ///     This class is responsible for managing the worker jobs.

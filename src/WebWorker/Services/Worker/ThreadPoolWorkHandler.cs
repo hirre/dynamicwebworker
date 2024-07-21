@@ -1,6 +1,6 @@
 ﻿using WebWorker.Models;
 
-namespace WebWorker.Worker
+namespace WebWorker.Services.Worker
 {
     public class ThreadPoolWorkHandler
     {

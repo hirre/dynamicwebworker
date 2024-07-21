@@ -6,11 +6,9 @@ using WebWorker.Assembly;
 using WebWorker.Exceptions;
 using WebWorker.Models;
 using WebWorker.Services.MessageBroker;
-using WebWorker.Worker;
 using WebWorkerInterfaces;
 
-
-namespace WebWorker.Services
+namespace WebWorker.Services.Worker
 {
     /// <summary>
     ///     This class contains the logic for creating and removing workers.

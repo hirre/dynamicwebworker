@@ -1,8 +1,8 @@
 using WebWorker.Assembly;
 using WebWorker.Exceptions;
-using WebWorker.Services;
 using WebWorker.Models;
 using WebWorker.Services.MessageBroker;
+using WebWorker.Services.Worker;
 
 var builder = WebApplication.CreateBuilder(args);
 

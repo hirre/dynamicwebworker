@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebWorker.Models;
-using WebWorker.Services;
+using WebWorker.Services.Worker;
 
 namespace WebWorker.Controllers
 {
