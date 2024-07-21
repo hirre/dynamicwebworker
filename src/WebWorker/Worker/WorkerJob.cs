@@ -5,6 +5,13 @@ using WebWorker.Models;
 
 namespace WebWorker.Worker
 {
+    /// <summary>
+    ///     This class is responsible for managing the worker jobs.
+    /// </summary>
+    /// <param name="id">Worker id</param>
+    /// <param name="logger">The logger</param>
+    /// <param name="webWorkerAssemblyLoadContext">Assembly loading context for dynamic loading of libraries</param>
+    /// <param name="cancellationTokenSource">The cancellation token</param>
     public class WorkerJob(string id, ILogger<WorkerJob> logger, WebWorkerAssemblyLoadContext webWorkerAssemblyLoadContext,
         CancellationTokenSource cancellationTokenSource)
     {
@@ -18,8 +25,14 @@ namespace WebWorker.Worker
         private readonly ConcurrentQueue<IMessage> _messageQueue = new();
         private bool _jobCreated;
 
+        /// <summary>
+        ///    The worker id.
+        /// </summary>
         public string Id { get; } = id;
 
+        /// <summary>
+        ///     Starts the worker
+        /// </summary>
         public void Start()
         {
             if (_jobCreated)
@@ -29,20 +42,31 @@ namespace WebWorker.Worker
             _jobCreated = true;
         }
 
-        public async Task StopAsync()
+        /// <summary>
+        ///    Stops the worker
+        /// </summary>
+        /// <returns>Task</returns>
+        public void Stop()
         {
             if (_cancellationTokenSource.IsCancellationRequested || !_jobCreated)
                 return;
 
-            await _cancellationTokenSource.CancelAsync();
+            _cancellationTokenSource.Cancel();
         }
 
+        /// <summary>
+        ///     Signals that a message has been received to the worker.
+        /// </summary>
+        /// <param name="message">The message</param>
         public void SignalMessageEvent(IMessage message)
         {
             _messageQueue.Enqueue(message);
             _messageEvent.Set();
         }
 
+        /// <summary>
+        ///     Processes the work.
+        /// </summary>
         private void ProcessWork()
         {
             _logger.LogInformation($"Starting worker (# {Id})...");

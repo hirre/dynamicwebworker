@@ -3,6 +3,9 @@ using WebWorker.Models;
 
 namespace WebWorker.MessageBroker
 {
+    /// <summary>
+    ///     The RabbitMQ service configuration.
+    /// </summary>
     public class RabbitMQConnectionService : IDisposable
     {
         private readonly IConfiguration _configuration;
@@ -10,6 +13,11 @@ namespace WebWorker.MessageBroker
 
         public required IConnection _connection;
 
+        /// <summary>
+        ///     Creates a new instance of the RabbitMQ service.
+        /// </summary>
+        /// <param name="configuration">IConfiguration object</param>
+        /// <param name="workerRepo">Worker repository object</param>
         public RabbitMQConnectionService(IConfiguration configuration, WorkerRepo workerRepo)
         {
             _configuration = configuration;
@@ -18,6 +26,9 @@ namespace WebWorker.MessageBroker
             InitializeRabbitMQ();
         }
 
+        /// <summary>
+        ///     Initializes the RabbitMQ connection.
+        /// </summary>
         private void InitializeRabbitMQ()
         {
             var factory = new ConnectionFactory()
@@ -33,8 +44,15 @@ namespace WebWorker.MessageBroker
             _connection = factory.CreateConnection();
         }
 
+        /// <summary>
+        ///     Gets the RabbitMQ connection.
+        /// </summary>
+        /// <returns>IConnection object</returns>
         public IConnection GetConnection() => _connection;
 
+        /// <summary>
+        ///     Disposes the RabbitMQ connection.
+        /// </summary>
         public void Dispose()
         {
             foreach (var channel in _workerRepo.GetChannelArray())

@@ -3,6 +3,9 @@ using System.Collections.Concurrent;
 
 namespace WebWorker.Models
 {
+    /// <summary>
+    ///     The worker repository.
+    /// </summary>
     public class WorkerRepo
     {
         private ConcurrentDictionary<string, WorkerData> _workerData = new();
