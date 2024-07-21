@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using WebWorker.Logic;
 using WebWorker.Models;
+using WebWorker.Services;
 
 namespace WebWorker.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WorkerController(WorkerLogic workLogic, ILogger<WorkerController> logger) : ControllerBase
+    public class WorkerController(WorkerService workerService, ILogger<WorkerController> logger) : ControllerBase
     {
-        private readonly WorkerLogic _workLogic = workLogic;
+        private readonly WorkerService _workerService = workerService;
         private readonly ILogger<WorkerController> _logger = logger;
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace WebWorker.Controllers
                 return BadRequest(ModelState);
             }
 
-            await _workLogic.CreateWorker(createWorkerRequestDto);
+            await _workerService.CreateWorker(createWorkerRequestDto);
 
             return Ok();
         }
@@ -45,7 +45,7 @@ namespace WebWorker.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Delete(string id)
         {
-            await _workLogic.RemoveWorker(id);
+            await _workerService.RemoveWorker(id);
 
             return Ok();
         }

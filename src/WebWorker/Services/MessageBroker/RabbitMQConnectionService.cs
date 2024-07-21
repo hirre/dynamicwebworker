@@ -1,7 +1,7 @@
 ﻿using RabbitMQ.Client;
 using WebWorker.Models;
 
-namespace WebWorker.MessageBroker
+namespace WebWorker.Services.MessageBroker
 {
     /// <summary>
     ///     The RabbitMQ service configuration.

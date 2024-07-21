@@ -1,8 +1,8 @@
 using WebWorker.Assembly;
 using WebWorker.Exceptions;
-using WebWorker.Logic;
-using WebWorker.MessageBroker;
+using WebWorker.Services;
 using WebWorker.Models;
+using WebWorker.Services.MessageBroker;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<WebWorkerAssemblyLoadContext>();
 builder.Services.AddSingleton<WorkerRepo>();
 builder.Services.AddSingleton<RabbitMQConnectionService>();
-builder.Services.AddScoped<WorkerLogic>();
+builder.Services.AddScoped<WorkerService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

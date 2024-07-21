@@ -4,13 +4,13 @@ using System.Text;
 using System.Text.Json;
 using WebWorker.Assembly;
 using WebWorker.Exceptions;
-using WebWorker.MessageBroker;
 using WebWorker.Models;
+using WebWorker.Services.MessageBroker;
 using WebWorker.Worker;
 using WebWorkerInterfaces;
 
 
-namespace WebWorker.Logic
+namespace WebWorker.Services
 {
     /// <summary>
     ///     This class contains the logic for creating and removing workers.
@@ -20,17 +20,17 @@ namespace WebWorker.Logic
     /// <param name="rabbitMQConnectionService">The RabbitMQ service provider</param>
     /// <param name="workerRepo">A repository of containing worker and RabbitMQ channel data</param>
     /// <param name="logger">The logger</param>
-    public class WorkerLogic(IConfiguration configuration,
+    public class WorkerService(IConfiguration configuration,
         IServiceProvider serviceProvider,
         RabbitMQConnectionService rabbitMQConnectionService,
         WorkerRepo workerRepo,
-        ILogger<WorkerLogic> logger)
+        ILogger<WorkerService> logger)
     {
         private readonly IConfiguration _configuration = configuration;
         private readonly IServiceProvider _serviceProvider = serviceProvider;
         private readonly RabbitMQConnectionService _rabbitMQConnectionService = rabbitMQConnectionService;
         private readonly WorkerRepo _workerRepo = workerRepo;
-        private readonly ILogger<WorkerLogic> _logger = logger;
+        private readonly ILogger<WorkerService> _logger = logger;
 
         /// <summary>
         ///     Creates a worker.
