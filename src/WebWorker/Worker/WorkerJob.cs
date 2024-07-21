@@ -25,7 +25,7 @@ namespace WebWorker.Worker
             if (_jobCreated)
                 return;
 
-            Task.Factory.StartNew(() => ExecuteAsync(), _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+            Task.Factory.StartNew(() => ProcessWork(), _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
             _jobCreated = true;
         }
 
@@ -43,7 +43,7 @@ namespace WebWorker.Worker
             _messageEvent.Set();
         }
 
-        private void ExecuteAsync()
+        private void ProcessWork()
         {
             _logger.LogInformation($"Starting worker (# {Id})...");
 
