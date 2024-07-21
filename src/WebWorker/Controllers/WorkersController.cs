@@ -6,10 +6,10 @@ namespace WebWorker.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WorkerController(WorkerService workerService, ILogger<WorkerController> logger) : ControllerBase
+    public class WorkersController(WorkerService workerService, ILogger<WorkersController> logger) : ControllerBase
     {
         private readonly WorkerService _workerService = workerService;
-        private readonly ILogger<WorkerController> _logger = logger;
+        private readonly ILogger<WorkersController> _logger = logger;
 
         /// <summary>
         ///     Creates a worker.
