@@ -3,7 +3,6 @@ using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
 using WebWorker.Assembly;
-using WebWorker.Exceptions;
 using WebWorker.Models;
 using WebWorker.Services.MessageBroker;
 using WebWorkerInterfaces;
@@ -37,25 +36,25 @@ namespace WebWorker.Services.Worker
         /// <returns>200 on success</returns>
         /// <exception cref="MaxWorkerLimitReachedException">If maximum worker limit is reached</exception>
         /// <exception cref="DuplicateWorkerException">If worker already exists</exception>
-        public async Task CreateWorker(CreateWorkerRequestDto createWorkerRequestDto)
+        public async Task<Result<string?>> CreateWorker(CreateWorkerRequestDto createWorkerRequestDto)
         {
-            var maxWorkers = int.TryParse(_configuration[Constants.WEBWORKER_MAX_WORKERS], out var maxWorkersVal) ? maxWorkersVal : 400;
+            var maxWorkers = int.TryParse(_configuration[Definitions.WEBWORKER_MAX_WORKERS], out var maxWorkersVal) ? maxWorkersVal : 400;
             var queueName = createWorkerRequestDto.UniqueQueueId;
             var exchangeName = "exchange." + queueName;
             var routingKey = "route." + queueName;
 
             if (_workerRepo.GetWorkerJobCount() + 1 > maxWorkers)
-                throw new MaxWorkerLimitReachedException("Maximum number of workers reached");
+                return Result<string>.Failure("Maximum number of workers reached", ErrorCodes.MaximumWorkersReached);
 
             if (_workerRepo.ContainsWorkerJob(routingKey))
-                throw new DuplicateWorkerException($"Worker {createWorkerRequestDto.UniqueQueueId} already exists.");
+                return Result<string>.Failure($"Worker {createWorkerRequestDto.UniqueQueueId} already exists", ErrorCodes.WorkerJobAlreadyExists);
 
             var conn = _rabbitMQConnectionService.GetConnection();
             var channel = conn.CreateModel();
 
             var consumer = InitializeRabbitMQ(channel, exchangeName, queueName, routingKey);
 
-            var useThreadPool = bool.TryParse(_configuration[Constants.WEBWORKER_USE_THREADPOOL], out var tPool) && tPool;
+            var useThreadPool = bool.TryParse(_configuration[Definitions.WEBWORKER_USE_THREADPOOL], out var tPool) && tPool;
 
             if (!useThreadPool)
             {
@@ -69,13 +68,15 @@ namespace WebWorker.Services.Worker
 
             _workerRepo.AddChannel(routingKey, channel);
 
-            var autoAckValue = bool.TryParse(_configuration[Constants.RABBITMQ_QUEUE_AUTOACK], out var ackVal) && ackVal;
+            var autoAckValue = bool.TryParse(_configuration[Definitions.RABBITMQ_QUEUE_AUTOACK], out var ackVal) && ackVal;
 
             channel.BasicConsume(queue: queueName,
                                  autoAck: autoAckValue,
                                  consumer: consumer);
 
             await Task.Yield();
+
+            return Result<string>.Success();
         }
 
         /// <summary>
@@ -85,10 +86,10 @@ namespace WebWorker.Services.Worker
         /// <returns>Task</returns>
         /// <exception cref="WorkerNotFoundException">When the worker can't be found</exception>
         /// <exception cref="NullReferenceException">If the worker object is null</exception>
-        public async Task RemoveWorker(string id)
+        public async Task<Result<string?>> RemoveWorker(string id)
         {
             if (!_workerRepo.ContainsWorkerJob(id))
-                throw new WorkerNotFoundException($"Worker {id} not found.");
+                return Result<string>.Failure($"Worker {id} not found", ErrorCodes.WorkerJobNotFound);
 
             var workerJob = _workerRepo.GetWorkerJob(id) ?? throw new NullReferenceException($"Null worker {id}.");
 
@@ -97,6 +98,8 @@ namespace WebWorker.Services.Worker
             _workerRepo.GetChannel(id)?.Close();
 
             await Task.Yield();
+
+            return Result<string>.Success();
         }
 
         /// <summary>
@@ -114,8 +117,8 @@ namespace WebWorker.Services.Worker
 
             if (msg != null)
             {
-                var useThreadPool = bool.TryParse(_configuration[Constants.WEBWORKER_USE_THREADPOOL], out var tPool) && tPool;
-                var autoAckValue = bool.TryParse(_configuration[Constants.RABBITMQ_QUEUE_AUTOACK], out var ackVal) && ackVal;
+                var useThreadPool = bool.TryParse(_configuration[Definitions.WEBWORKER_USE_THREADPOOL], out var tPool) && tPool;
+                var autoAckValue = bool.TryParse(_configuration[Definitions.RABBITMQ_QUEUE_AUTOACK], out var ackVal) && ackVal;
 
                 var workerJob = _workerRepo.GetWorkerJob(ea.RoutingKey);
                 var channel = _workerRepo.GetChannel(ea.RoutingKey);
@@ -146,16 +149,16 @@ namespace WebWorker.Services.Worker
         /// <returns>EventingBasicConsumer object</returns>
         private EventingBasicConsumer InitializeRabbitMQ(IModel channel, string exchangeName, string queueName, string routingKey)
         {
-            var durableValue = bool.TryParse(_configuration[Constants.RABBITMQ_QUEUE_DURABLE], out var durVal) && durVal;
-            var exclusiveValue = bool.TryParse(_configuration[Constants.RABBITMQ_QUEUE_EXCLUSIVE], out var exclVal) && exclVal;
-            var autoDeleteValue = bool.TryParse(_configuration[Constants.RABBITMQ_QUEUE_AUTODELETE], out var autoDelVal) && autoDelVal;
-            var exchangeType = string.IsNullOrEmpty(_configuration[Constants.RABBITMQ_CHANNEL_EXCHANGETYPE]) ?
-                ExchangeType.Direct : _configuration[Constants.RABBITMQ_CHANNEL_EXCHANGETYPE];
-            var channelQosPrefetchSize = uint.TryParse(_configuration[Constants.RABBITMQ_CHANNEL_QOS_PREFETCHSIZE], out var qosPrefetchSize) ?
+            var durableValue = bool.TryParse(_configuration[Definitions.RABBITMQ_QUEUE_DURABLE], out var durVal) && durVal;
+            var exclusiveValue = bool.TryParse(_configuration[Definitions.RABBITMQ_QUEUE_EXCLUSIVE], out var exclVal) && exclVal;
+            var autoDeleteValue = bool.TryParse(_configuration[Definitions.RABBITMQ_QUEUE_AUTODELETE], out var autoDelVal) && autoDelVal;
+            var exchangeType = string.IsNullOrEmpty(_configuration[Definitions.RABBITMQ_CHANNEL_EXCHANGETYPE]) ?
+                ExchangeType.Direct : _configuration[Definitions.RABBITMQ_CHANNEL_EXCHANGETYPE];
+            var channelQosPrefetchSize = uint.TryParse(_configuration[Definitions.RABBITMQ_CHANNEL_QOS_PREFETCHSIZE], out var qosPrefetchSize) ?
                 qosPrefetchSize : 0;
-            var channelQosPrefetchCount = ushort.TryParse(_configuration[Constants.RABBITMQ_CHANNEL_QOS_PREFETCHCOUNT], out var qosPrefetchCount) ?
+            var channelQosPrefetchCount = ushort.TryParse(_configuration[Definitions.RABBITMQ_CHANNEL_QOS_PREFETCHCOUNT], out var qosPrefetchCount) ?
                 qosPrefetchCount : (ushort)1;
-            var channelQosGlobal = bool.TryParse(_configuration[Constants.RABBITMQ_CHANNEL_QOS_GLOBAL], out var qosGlobal) && qosGlobal;
+            var channelQosGlobal = bool.TryParse(_configuration[Definitions.RABBITMQ_CHANNEL_QOS_GLOBAL], out var qosGlobal) && qosGlobal;
 
             channel.ExchangeDeclare(exchangeName, exchangeType);
 
@@ -163,11 +166,11 @@ namespace WebWorker.Services.Worker
                                  durable: durableValue,
                                  exclusive: exclusiveValue,
                                  autoDelete: autoDeleteValue,
-                                 arguments: LoadArguments(Constants.RABBITMQ_QUEUE_ARGUMENTS));
+                                 arguments: LoadArguments(Definitions.RABBITMQ_QUEUE_ARGUMENTS));
 
             channel.BasicQos(prefetchSize: channelQosPrefetchSize, prefetchCount: channelQosPrefetchCount, global: channelQosGlobal);
 
-            channel.QueueBind(queueName, exchangeName, routingKey, LoadArguments(Constants.RABBITMQ_QUEUE_BIND_ARGUMENTS));
+            channel.QueueBind(queueName, exchangeName, routingKey, LoadArguments(Definitions.RABBITMQ_QUEUE_BIND_ARGUMENTS));
 
             var consumer = new EventingBasicConsumer(channel);
 

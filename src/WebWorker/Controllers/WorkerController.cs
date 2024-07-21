@@ -15,7 +15,6 @@ namespace WebWorker.Controllers
         ///     Creates a worker.
         /// </summary>
         /// <param name="createWorkerRequestDto">Worker request object</param>
-        /// <returns>200 on success</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -29,7 +28,20 @@ namespace WebWorker.Controllers
                 return BadRequest(ModelState);
             }
 
-            await _workerService.CreateWorker(createWorkerRequestDto);
+            var result = await _workerService.CreateWorker(createWorkerRequestDto);
+
+            if (!result.IsSuccess)
+            {
+                switch (result.ErrorCode)
+                {
+                    case ErrorCodes.WorkerJobAlreadyExists:
+                        return Problem(result.ErrorMessageDetail, statusCode: StatusCodes.Status409Conflict);
+                    case ErrorCodes.MaximumWorkersReached:
+                        return Problem(result.ErrorMessageDetail, statusCode: StatusCodes.Status429TooManyRequests);
+                    default:
+                        return Problem(result.ErrorMessageDetail, statusCode: StatusCodes.Status400BadRequest);
+                }
+            }
 
             return Ok();
         }
@@ -38,14 +50,25 @@ namespace WebWorker.Controllers
         ///     Deletes a worker.
         /// </summary>
         /// <param name="id">Worker id</param>
-        /// <returns>200 on success</returns>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Delete(string id)
         {
-            await _workerService.RemoveWorker(id);
+            var result = await _workerService.RemoveWorker(id);
+
+            if (!result.IsSuccess)
+            {
+                switch (result.ErrorCode)
+                {
+                    case ErrorCodes.WorkerJobNotFound:
+                        return Problem(result.ErrorMessageDetail, statusCode: StatusCodes.Status404NotFound);
+                    default:
+                        return Problem(result.ErrorMessageDetail, statusCode: StatusCodes.Status400BadRequest);
+                }
+            }
 
             return Ok();
         }

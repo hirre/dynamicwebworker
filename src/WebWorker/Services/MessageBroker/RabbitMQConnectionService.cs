@@ -33,12 +33,12 @@ namespace WebWorker.Services.MessageBroker
         {
             var factory = new ConnectionFactory()
             {
-                HostName = _configuration[Constants.RABBITMQ_HOSTNAME],
-                UserName = _configuration[Constants.RABBITMQ_USERNAME],
-                Password = _configuration[Constants.RABBITMQ_PASSWORD],
-                Port = int.TryParse(_configuration[Constants.RABBITMQ_PORT], out var port) ? port : Constants.RABBITMQ_DEFAULT_PORT,
+                HostName = _configuration[Definitions.RABBITMQ_HOSTNAME],
+                UserName = _configuration[Definitions.RABBITMQ_USERNAME],
+                Password = _configuration[Definitions.RABBITMQ_PASSWORD],
+                Port = int.TryParse(_configuration[Definitions.RABBITMQ_PORT], out var port) ? port : Definitions.RABBITMQ_DEFAULT_PORT,
                 ClientProvidedName = "WebWorker",
-                AutomaticRecoveryEnabled = bool.TryParse(_configuration[Constants.RABBITMQ_AUTORECOVERY], out var areVal) && areVal
+                AutomaticRecoveryEnabled = bool.TryParse(_configuration[Definitions.RABBITMQ_AUTORECOVERY], out var areVal) && areVal
             };
 
             _connection = factory.CreateConnection();

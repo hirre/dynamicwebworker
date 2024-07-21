@@ -1,6 +1,6 @@
 ﻿namespace WebWorker
 {
-    public static class Constants
+    public static class Definitions
     {
         #region Configuration keys
 
@@ -24,5 +24,13 @@
         public const string RABBITMQ_CHANNEL_QOS_GLOBAL = "RabbitMQ:Channel:Qos:Global";
 
         #endregion
+    }
+
+    public enum ErrorCodes
+    {
+        NoError = 0,
+        MaximumWorkersReached = 100,
+        WorkerJobNotFound = 102,
+        WorkerJobAlreadyExists = 103,
     }
 }
