@@ -6,27 +6,38 @@ namespace WebWorker.Assembly
     public class WebWorkerAssemblyLoadContext : AssemblyLoadContext
     {
         private string? workPath;
+        private AssemblyDependencyResolver _resolver;
 
-        public WebWorkerAssemblyLoadContext() : base(isCollectible: true)
+
+        public WebWorkerAssemblyLoadContext(string pluginPath)
         {
+            _resolver = new AssemblyDependencyResolver(pluginPath);
+
         }
 
         protected override System.Reflection.Assembly? Load(AssemblyName assemblyName)
         {
-            // Attempt to load the requested assembly from the default context
-            var assembly = Default.LoadFromAssemblyName(assemblyName);
+            var assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
 
-            if (assembly != null)
+            if (assemblyPath != null)
             {
-                return assembly;
+                return LoadFromAssemblyPath(assemblyPath);
             }
 
-            // If not found, attempt to load it from other sources if needed
-            string assemblyPath = $"/Work/{assemblyName.Name}/{assemblyName.Name}.dll";
-
-            return File.Exists(assemblyPath) ? LoadFromAssemblyPath(assemblyPath) : null;
+            return null;
         }
 
+        protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
+        {
+            var libraryPath = _resolver.ResolveUnmanagedDllToPath(unmanagedDllName);
+
+            if (libraryPath != null)
+            {
+                return LoadUnmanagedDllFromPath(libraryPath);
+            }
+
+            return IntPtr.Zero;
+        }
 
         /// <summary>
         ///     Create the Work directory if it does not exist.

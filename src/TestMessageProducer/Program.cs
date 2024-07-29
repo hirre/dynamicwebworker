@@ -33,7 +33,8 @@ while (true)
 {
     var msg = new TestMessage
     {
-        Message = "Hello World!"
+        Message = "Hello World!",
+        WorkClassName = "SomeWork"
     };
 
     var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(msg));

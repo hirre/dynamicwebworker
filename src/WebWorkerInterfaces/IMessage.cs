@@ -2,5 +2,6 @@
 {
     public interface IMessage
     {
+        string WorkClassName { get; set; }
     }
 }

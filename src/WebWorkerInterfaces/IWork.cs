@@ -1,9 +1,7 @@
-﻿using WebWorker.Models;
-
-namespace WebWorkerInterfaces
+﻿namespace WebWorkerInterfaces
 {
     public interface IWork
     {
-        Task ExecuteWork(IMessage message, CancellationToken stoppingToken);
+        Task ExecuteWork(object data, CancellationToken stoppingToken);
     }
 }

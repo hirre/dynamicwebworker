@@ -16,17 +16,20 @@ namespace WebWorker.Services.Worker
     /// <param name="serviceProvider">IServiceProvider instance</param>
     /// <param name="rabbitMQConnectionService">The RabbitMQ service provider</param>
     /// <param name="workerRepo">A repository of containing worker and RabbitMQ channel data</param>
+    /// <param name="workPluginRepo">The work plugin repository</param>
     /// <param name="logger">The logger</param>
     public class WorkerService(IConfiguration configuration,
         IServiceProvider serviceProvider,
         RabbitMQConnectionService rabbitMQConnectionService,
         WorkerRepo workerRepo,
+        WorkPluginRepo workPluginRepo,
         ILogger<WorkerService> logger)
     {
         private readonly IConfiguration _configuration = configuration;
         private readonly IServiceProvider _serviceProvider = serviceProvider;
         private readonly RabbitMQConnectionService _rabbitMQConnectionService = rabbitMQConnectionService;
         private readonly WorkerRepo _workerRepo = workerRepo;
+        private readonly WorkPluginRepo _workPluginRepo = workPluginRepo;
         private readonly ILogger<WorkerService> _logger = logger;
 
         /// <summary>
@@ -59,7 +62,7 @@ namespace WebWorker.Services.Worker
             if (!useThreadPool)
             {
                 var wJob = new WorkerJob(routingKey, _serviceProvider.GetRequiredService<ILogger<WorkerJob>>(),
-                            _serviceProvider.GetRequiredService<WebWorkerAssemblyLoadContext>(), new CancellationTokenSource());
+                            _serviceProvider.GetRequiredService<WorkPluginRepo>(), new CancellationTokenSource());
 
                 _workerRepo.AddWorkerJob(wJob);
 
@@ -125,9 +128,13 @@ namespace WebWorker.Services.Worker
 
                 if (useThreadPool)
                 {
-                    var threadPoolWorkHandler = new ThreadPoolWorkHandler();
+                    var work = _workPluginRepo.GetWorkPlugin(msg.WorkClassName);
 
-                    Task.Run(() => threadPoolWorkHandler.Execute(msg));
+                    if (work != null)
+                        Task.Run(() => work.ExecuteWork(msg, new CancellationTokenSource().Token).GetAwaiter().GetResult());
+                    else
+                        _logger.LogError($"Work plugin {msg.WorkClassName} not found.");
+
                 }
                 else
                 {
