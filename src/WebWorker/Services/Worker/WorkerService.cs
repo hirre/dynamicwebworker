@@ -116,7 +116,7 @@ namespace WebWorker.Services.Worker
 
             var msgJsonStr = Encoding.UTF8.GetString(body);
 
-            var msg = JsonSerializer.Deserialize<TestMessage>(msgJsonStr);
+            var msg = JsonSerializer.Deserialize<WebWorkerMessage>(msgJsonStr);
 
             if (msg != null)
             {

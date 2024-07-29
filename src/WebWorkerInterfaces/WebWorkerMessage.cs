@@ -2,9 +2,9 @@
 
 namespace WebWorkerInterfaces
 {
-    public class TestMessage : IMessage
+    public class WebWorkerMessage : IMessage
     {
-        public required string Message { get; set; }
+        public required object Data { get; set; }
         public required string WorkClassName { get; set; }
     }
 }

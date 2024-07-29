@@ -31,9 +31,9 @@ channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
 
 while (true)
 {
-    var msg = new TestMessage
+    var msg = new WebWorkerMessage
     {
-        Message = "Hello World!",
+        Data = "Hello World!",
         WorkClassName = "SomeWork"
     };
 
@@ -54,7 +54,7 @@ while (true)
         Console.WriteLine("Message sent but not confirmed.");
     }
 
-    Console.WriteLine($" [x] Sent {msg.Message}");
+    Console.WriteLine($" [x] Sent {msg.Data}");
     Console.ReadLine();
 
 }
