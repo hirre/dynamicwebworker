@@ -131,7 +131,7 @@ namespace WebWorker.Services.Worker
                     var work = _workPluginRepo.GetWorkPlugin(msg.WorkClassName);
 
                     if (work != null)
-                        Task.Run(() => work.ExecuteWork(msg, new CancellationTokenSource().Token).GetAwaiter().GetResult());
+                        Task.Run(() => work.ExecuteWork(msg.Data, new CancellationTokenSource().Token).GetAwaiter().GetResult());
                     else
                         _logger.LogError($"Work plugin {msg.WorkClassName} not found.");
 

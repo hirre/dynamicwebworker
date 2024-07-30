@@ -52,7 +52,9 @@ namespace WebWorker.Assembly
                 throw new DirectoryNotFoundException("Could not find the assembly location");
             }
 
+#pragma warning disable CS8604 // Possible null reference argument.
             workPath = Path.Combine(Path.GetDirectoryName(assemblyLocation), "Work");
+#pragma warning restore CS8604 // Possible null reference argument.
 
             if (!Directory.Exists(workPath))
             {

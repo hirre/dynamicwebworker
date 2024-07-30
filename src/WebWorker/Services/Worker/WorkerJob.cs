@@ -90,7 +90,7 @@ namespace WebWorker.Services.Worker
                         var work = _workPluginRepo.GetWorkPlugin(message.WorkClassName);
 
                         if (work != null)
-                            work.ExecuteWork(message, _cancellationTokenSource.Token).GetAwaiter().GetResult();
+                            work.ExecuteWork(message.Data, _cancellationTokenSource.Token).GetAwaiter().GetResult();
                         else
                             _logger.LogError($"Work plugin {message.WorkClassName} not found.");
                     }

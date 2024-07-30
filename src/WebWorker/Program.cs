@@ -55,7 +55,9 @@ void LoadWorkPlugins(WorkPluginRepo? repo)
         throw new ArgumentNullException(nameof(repo));
     }
 
+#pragma warning disable CS8604 // Possible null reference argument.
     var workFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Work");
+#pragma warning restore CS8604 // Possible null reference argument.
 
     foreach (var workPluginFolder in Directory.EnumerateDirectories(workFolder))
     {
