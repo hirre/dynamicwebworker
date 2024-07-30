@@ -19,5 +19,15 @@ namespace WebWorker.Assembly
         {
             return _workPluginDict.ContainsKey(workPluginClassName) ? _workPluginDict[workPluginClassName] : null;
         }
+
+        public int GetWorkPluginCount()
+        {
+            return _workPluginDict.Count;
+        }
+
+        public string[] GetWorkPluginNames()
+        {
+            return [.. _workPluginDict.Keys];
+        }
     }
 }
