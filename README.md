@@ -23,3 +23,6 @@ docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
 
 ### Type of queue used for permanent workers
 ![image](https://github.com/user-attachments/assets/88ee5d20-51fb-406d-9b77-ff6ea73538f5)
+
+### Other
+- Can execute custom work code without using the dynamic loading feature: https://github.com/hirre/dynamicwebworker/issues/8#issuecomment-2256109699
