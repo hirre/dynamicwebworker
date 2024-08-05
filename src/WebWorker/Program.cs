@@ -1,3 +1,4 @@
+using Serilog;
 using System.Reflection;
 using WebWorker.Assembly;
 using WebWorker.Exceptions;
@@ -13,15 +14,16 @@ builder.Services.AddSingleton<WorkerRepo>();
 builder.Services.AddSingleton<WorkPluginRepo>();
 builder.Services.AddSingleton<RabbitMQConnectionService>();
 builder.Services.AddScoped<WorkerService>();
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddProblemDetails();
-builder.Services.AddLogging();
 builder.Services.AddExceptionHandler<ExceptionsHandler>();
+builder.Services.AddSerilog(l => l.ReadFrom.Configuration(builder.Configuration));
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -36,15 +38,16 @@ else
 }
 
 app.UseHttpsRedirection();
-
+app.UseRouting();
 app.UseAuthorization();
-
 app.MapControllers();
 app.UseStatusCodePages();
 
 LoadWorkPlugins(app.Services.GetService<WorkPluginRepo>());
 
-app.Run();
+await app.RunAsync();
+
+await Log.CloseAndFlushAsync();
 
 
 // Load work plugins
