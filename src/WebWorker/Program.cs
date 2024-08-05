@@ -1,7 +1,9 @@
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Serilog;
 using System.Reflection;
 using WebWorker.Assembly;
 using WebWorker.Exceptions;
+using WebWorker.Health;
 using WebWorker.Models;
 using WebWorker.Services.MessageBroker;
 using WebWorker.Services.Worker;
@@ -21,8 +23,14 @@ builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ExceptionsHandler>();
 builder.Services.AddSerilog(l => l.ReadFrom.Configuration(builder.Configuration));
 
+builder.Services.AddHealthChecks()
+         .AddCheck<MemoryHealthCheck>($"Web Worker Memory Check",
+         failureStatus: HealthStatus.Unhealthy,
+         tags: ["Web Worker Health Feedback Service"]);
+
 var app = builder.Build();
 
+app.MapHealthChecks("/api/health");
 app.UseSerilogRequestLogging();
 
 // Configure the HTTP request pipeline.
